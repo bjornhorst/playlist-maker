@@ -1,8 +1,7 @@
-// src/pages/api/playlists/manage.ts
-
 import axios from "axios";
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getSession } from "next-auth/react";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "../auth/[...nextauth]";
 
 interface PlaylistRequestBody {
     playlistId?: string;
@@ -21,7 +20,8 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<PlaylistResponse>
 ) {
-    const session = await getSession({ req });
+    const session = await getServerSession(req, res, authOptions);
+
     if (!session || !session.user.accessToken) {
         return res.status(401).json({ error: "Unauthorized" });
     }
@@ -34,7 +34,6 @@ export default async function handler(
         let finalPlaylistId = playlistId;
 
         if (!playlistId) {
-            // Create a new playlist
             const userRes = await axios.get("https://api.spotify.com/v1/me", { headers });
             const userId = userRes.data.id;
 
@@ -46,7 +45,6 @@ export default async function handler(
 
             finalPlaylistId = createRes.data.id;
         } else if (clearExisting) {
-            // Clear existing playlist
             await axios.put(
                 `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
                 { uris: [] },
@@ -54,7 +52,6 @@ export default async function handler(
             );
         }
 
-        // Add tracks to playlist
         await axios.post(
             `https://api.spotify.com/v1/playlists/${finalPlaylistId}/tracks`,
             { uris: trackUris },

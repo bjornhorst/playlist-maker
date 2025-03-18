@@ -1,9 +1,10 @@
 "use client";
-import { useState } from "react";
+import {useState} from "react";
 import axios from "axios";
-import { Artist } from "@/types";
+import {Artist} from "@/types";
 
 interface Track {
+    popularity: number;
     id: string;
     uri: string;
     duration_ms: number;
@@ -15,7 +16,7 @@ interface ArtistTracks {
     tracks: Track[];
 }
 
-export default function PlaylistGenerator({ selectedArtists }: { selectedArtists: Artist[] }) {
+export default function PlaylistGenerator({selectedArtists}: { selectedArtists: Artist[] }) {
     const [amount, setAmount] = useState<number>(25);
     const [duration, setDuration] = useState<number>(0); // minutes
     const [useDuration, setUseDuration] = useState<boolean>(false);
@@ -32,15 +33,18 @@ export default function PlaylistGenerator({ selectedArtists }: { selectedArtists
 
         try {
             const artistIds = selectedArtists.map((a) => a.id);
+
+            // Fetch tracks from backend
             const { data } = await axios.post("/api/artists/top-tracks", { artistIds });
 
-            const tracks = distributeTracks(
-                data.artistTracks,
-                useDuration ? undefined : amount,
-                useDuration ? duration * 60 * 1000 : undefined,
-                randomSongs
-            );
+            // Determine parameters clearly
+            const totalDurationMs = useDuration ? duration * 60 * 1000 : undefined;
+            const totalTracks = useDuration ? undefined : amount;
 
+            // Select tracks based on filters
+            const tracks = distributeTracks(data.artistTracks, totalTracks, totalDurationMs, randomSongs);
+
+            // Call API to manage playlist
             await axios.post("/api/playlists/manage", {
                 playlistId: existingPlaylistId || undefined,
                 title: playlistName,
@@ -48,7 +52,7 @@ export default function PlaylistGenerator({ selectedArtists }: { selectedArtists
                 clearExisting,
             });
 
-            alert("Playlist generated successfully!");
+            alert(`Playlist generated successfully with ${tracks.length} songs!`);
         } catch (error) {
             console.error("Error generating playlist:", error);
             alert("Failed to generate playlist.");
@@ -61,40 +65,49 @@ export default function PlaylistGenerator({ selectedArtists }: { selectedArtists
         totalDurationMs?: number,
         randomize = false
     ): Track[] => {
-        const tracksPerArtist = artistTracks.map((artist) => {
-            let tracks = artist.tracks;
-            if (randomize) tracks = tracks.sort(() => Math.random() - 0.5);
-            return tracks;
-        });
-
         const selectedTracks: Track[] = [];
-        let trackCounter = 0;
+        const numArtists = artistTracks.length;
+
+        if (randomize) {
+            artistTracks.forEach(artist => artist.tracks.sort(() => Math.random() - 0.5));
+        } else {
+            artistTracks.forEach(artist => artist.tracks.sort((a, b) => b.popularity - a.popularity));
+        }
+
+        const trackIndices = Array(numArtists).fill(0);
+        let currentDuration = 0;
 
         while (true) {
-            let added = false;
-            for (let i = 0; i < tracksPerArtist.length; i++) {
-                const artistTrackList = tracksPerArtist[i];
+            let addedInCycle = false;
 
-                if (artistTrackList.length <= trackCounter) continue;
+            for (let i = 0; i < numArtists; i++) {
+                const artist = artistTracks[i];
+                const index = trackIndices[i];
 
-                const track = artistTrackList[trackCounter];
+                if (index >= artist.tracks.length) continue;
 
-                if (totalTracks && selectedTracks.length >= totalTracks) return selectedTracks;
+                const track = artist.tracks[index];
 
-                if (totalDurationMs) {
-                    const currentDuration = selectedTracks.reduce((acc, t) => acc + t.duration_ms, 0);
-                    if (currentDuration >= totalDurationMs) return selectedTracks;
+                if (totalTracks && selectedTracks.length >= totalTracks) {
+                    return selectedTracks;
                 }
 
                 selectedTracks.push(track);
-                added = true;
+                currentDuration += track.duration_ms;
+                trackIndices[i] += 1;
+                addedInCycle = true;
+
+                if (totalDurationMs && currentDuration >= totalDurationMs) {
+                    return selectedTracks; // Nu stop je pas NADAT je over de duur heen bent.
+                }
             }
-            if (!added) break;
-            trackCounter++;
+
+            if (!addedInCycle) break; // Geen nummers meer beschikbaar
         }
 
         return selectedTracks;
     };
+
 
     return (
         <div className="flex flex-col space-y-4 p-4 border rounded-md">
