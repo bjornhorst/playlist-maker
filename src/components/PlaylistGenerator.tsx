@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { Artist } from "@/types";
-import { Music, Clock, Shuffle, Hash } from "lucide-react";
+import { Music, Clock, Hash } from "lucide-react";
 
 interface Track {
   popularity: number;
@@ -264,7 +264,7 @@ export default function PlaylistGenerator({
 
       <button
         onClick={generatePlaylist}
-        className="bg-green-500 text-white px-4 py-2 rounded-md"
+        className="bg-green-700 text-white px-4 py-2 rounded-md cursor-pointer hover:bg-green-500 transition-all"
       >
         Generate Playlist
       </button>
@@ -278,10 +278,10 @@ export default function PlaylistGenerator({
   if (isMobile) {
     return (
       <div className="">
-        <div className="fixed bottom-4 left-0 right-0 flex justify-center z-50 ">
+        <div className="fixed bottom-18 w-full left-0 right-0 flex justify-center z-50 ">
           <button
             onClick={() => setIsFormPopupOpen(true)}
-            className="bg-green-500 text-white px-6 py-3 rounded-lg "
+            className="bg-green-500 text-white px-6 py-3 rounded-t-lg w-full"
           >
             Generate Playlist
           </button>
@@ -289,11 +289,11 @@ export default function PlaylistGenerator({
 
         {isFormPopupOpen && (
           <div
-            className="fixed inset-0 bg-secondary flex items-center justify-center z-[100] p-4 "
+            className="fixed inset-0 bg-background  flex items-center justify-center z-[100] p-4 "
             onClick={() => setIsFormPopupOpen(false)}
           >
             <div
-              className=" bg-background rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
+              className=" bg-secondary rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {renderForm()}
