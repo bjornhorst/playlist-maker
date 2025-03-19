@@ -1,26 +1,163 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --background: hsl(0, 0%, 11%); /* Dark Gray */
+  --foreground: hsl(0, 0%, 98%); /* White */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  --card: hsl(0, 0%, 13%); /* Very Dark Gray */
+  --card-foreground: hsl(0, 0%, 98%); /* White */
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  --popover: hsl(0, 0%, 13%); /* Very Dark Gray */
+  --popover-foreground: hsl(0, 0%, 98%); /* White */
+
+  --primary: hsl(143, 70%, 50%); /* Green */
+  --primary-foreground: hsl(0, 0%, 100%); /* White */
+
+  --secondary: hsl(0, 0%, 17%); /* Dark Gray */
+  --secondary-foreground: hsl(0, 0%, 98%); /* White */
+
+  --muted: hsl(0, 0%, 16%); /* Dark Gray */
+  --muted-foreground: hsl(0, 0%, 63%); /* Light Gray */
+
+  --accent: hsl(143, 70%, 50%); /* Green */
+  --accent-foreground: hsl(0, 0%, 98%); /* White */
+
+  --destructive: hsl(0, 62.8%, 30.6%); /* Dark Red */
+  --destructive-foreground: hsl(0, 0%, 98%); /* White */
+
+  --border: hsl(0, 0%, 18%); /* Dark Gray */
+  --input: hsl(0, 0%, 18%); /* Dark Gray */
+
+  --ring: hsl(143, 70%, 50%); /* Green */
+
+  --radius: 0.5rem;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Background Colors */
+.bg-background {
+  background-color: var(--background);
+}
+.bg-card {
+  background-color: var(--card);
+}
+.bg-popover {
+  background-color: var(--popover);
+}
+.bg-primary {
+  background-color: var(--primary);
+}
+.bg-secondary {
+  background-color: var(--secondary);
+}
+.bg-muted {
+  background-color: var(--muted);
+}
+.bg-accent {
+  background-color: var(--accent);
+}
+.bg-destructive {
+  background-color: var(--destructive);
+}
+
+/* Text Colors */
+.text-background {
+  color: var(--background);
+}
+.text-foreground {
+  color: var(--foreground);
+}
+.text-card-foreground {
+  color: var(--card-foreground);
+}
+.text-popover-foreground {
+  color: var(--popover-foreground);
+}
+.text-primary-foreground {
+  color: var(--primary-foreground);
+}
+.text-secondary-foreground {
+  color: var(--secondary-foreground);
+}
+.text-muted-foreground {
+  color: var(--muted-foreground);
+}
+.text-accent-foreground {
+  color: var(--accent-foreground);
+}
+.text-destructive-foreground {
+  color: var(--destructive-foreground);
+}
+
+/* Border Colors */
+.border-background {
+  border-color: var(--background);
+}
+.border-card {
+  border-color: var(--card);
+}
+.border-popover {
+  border-color: var(--popover);
+}
+.border-primary {
+  border-color: var(--primary);
+}
+.border-secondary {
+  border-color: var(--secondary);
+}
+.border-muted {
+  border-color: var(--muted);
+}
+.border-accent {
+  border-color: var(--accent);
+}
+.border-destructive {
+  border-color: var(--destructive);
+}
+.border-border {
+  border-color: var(--border);
+}
+.border-input {
+  border-color: var(--input);
+}
+
+/* Ring (Focus Outline) */
+.ring-primary {
+  outline-color: var(--ring);
+}
+
+/* Border Radius */
+.rounded-default {
+  border-radius: var(--radius);
+}
+
+.bg-primary\/10 {
+  background-color: hsl(210 100% 52% / 0.1);
+}
+
+.border-primary\/30 {
+  border-color: hsl(210 100% 52% / 0.3);
+}
+
+.dropdown-class {
+  transition: 0.3s ease-in-out;
+}
+
+.dropdown-class:hover {
+  background-color: hsl(210 100% 52% / 0.1);
+  border-color: hsl(210 100% 52% / 0.3);
+}
+
+.peer:checked + .second-elm {
+  background-color: var(--accent);
+  transition: 0.3s ease-in-out;
+}
+
+.second-elm::after {
+  transition: 0.3s ease-in-out;
 }
