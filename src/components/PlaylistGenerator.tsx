@@ -5,6 +5,7 @@ import { Artist } from "@/types";
 import { Music, Clock, Shuffle, Hash } from "lucide-react";
 
 interface Track {
+  popularity: number;
   id: string;
   uri: string;
   duration_ms: number;
@@ -53,17 +54,25 @@ export default function PlaylistGenerator({
 
     try {
       const artistIds = selectedArtists.map((a) => a.id);
+
+      // Fetch tracks from backend
       const { data } = await axios.post("/api/artists/top-tracks", {
         artistIds,
       });
 
+      // Determine parameters clearly
+      const totalDurationMs = useDuration ? duration * 60 * 1000 : undefined;
+      const totalTracks = useDuration ? undefined : amount;
+
+      // Select tracks based on filters
       const tracks = distributeTracks(
         data.artistTracks,
-        useDuration ? undefined : amount,
-        useDuration ? duration * 60 * 1000 : undefined,
+        totalTracks,
+        totalDurationMs,
         randomSongs
       );
 
+      // Call API to manage playlist
       await axios.post("/api/playlists/manage", {
         playlistId: existingPlaylistId || undefined,
         title: playlistName,
@@ -85,40 +94,48 @@ export default function PlaylistGenerator({
     totalDurationMs?: number,
     randomize = false
   ): Track[] => {
-    const tracksPerArtist = artistTracks.map((artist) => {
-      let tracks = artist.tracks;
-      if (randomize) tracks = tracks.sort(() => Math.random() - 0.5);
-      return tracks;
-    });
-
     const selectedTracks: Track[] = [];
-    let trackCounter = 0;
+    const numArtists = artistTracks.length;
+
+    if (randomize) {
+      artistTracks.forEach((artist) =>
+        artist.tracks.sort(() => Math.random() - 0.5)
+      );
+    } else {
+      artistTracks.forEach((artist) =>
+        artist.tracks.sort((a, b) => b.popularity - a.popularity)
+      );
+    }
+
+    const trackIndices = Array(numArtists).fill(0);
+    let currentDuration = 0;
 
     while (true) {
-      let added = false;
-      for (let i = 0; i < tracksPerArtist.length; i++) {
-        const artistTrackList = tracksPerArtist[i];
+      let addedInCycle = false;
 
-        if (artistTrackList.length <= trackCounter) continue;
+      for (let i = 0; i < numArtists; i++) {
+        const artist = artistTracks[i];
+        const index = trackIndices[i];
 
-        const track = artistTrackList[trackCounter];
+        if (index >= artist.tracks.length) continue;
 
-        if (totalTracks && selectedTracks.length >= totalTracks)
+        const track = artist.tracks[index];
+
+        if (totalTracks && selectedTracks.length >= totalTracks) {
           return selectedTracks;
-
-        if (totalDurationMs) {
-          const currentDuration = selectedTracks.reduce(
-            (acc, t) => acc + t.duration_ms,
-            0
-          );
-          if (currentDuration >= totalDurationMs) return selectedTracks;
         }
 
         selectedTracks.push(track);
-        added = true;
+        currentDuration += track.duration_ms;
+        trackIndices[i] += 1;
+        addedInCycle = true;
+
+        if (totalDurationMs && currentDuration >= totalDurationMs) {
+          return selectedTracks; // Nu stop je pas NADAT je over de duur heen bent.
+        }
       }
-      if (!added) break;
-      trackCounter++;
+
+      if (!addedInCycle) break; // Geen nummers meer beschikbaar
     }
 
     return selectedTracks;

@@ -1,30 +1,75 @@
-import { getSession } from "next-auth/react";
-import axios from "axios";
+// src/pages/api/artists/top-tracks.ts
 import type { NextApiRequest, NextApiResponse } from "next";
+import { getServerSession } from "next-auth/next";
+import axios from "axios";
+import { authOptions } from "../auth/[...nextauth]";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const session = await getSession({ req });
-    if (!session || !session.user.accessToken) return res.status(401).json({ error: "Unauthorized" });
+interface Track {
+    id: string;
+    uri: string;
+    duration_ms: number;
+    name: string;
+    popularity: number;
+}
 
-    const artistIds = req.body.artistIds as string[];
+interface ArtistTracks {
+    artistId: string;
+    tracks: Track[];
+}
 
-    const headers = { Authorization: `Bearer ${session.user.accessToken}` };
+interface RequestBody {
+    artistIds: string[];
+}
+
+interface ResponseData {
+    artistTracks?: ArtistTracks[];
+    error?: string;
+}
+
+export default async function handler(
+    req: NextApiRequest,
+    res: NextApiResponse<ResponseData>
+) {
+    const session = await getServerSession(req, res, authOptions);
+
+    if (!session || !session.user.accessToken) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const { artistIds } = req.body as RequestBody;
+
+    const headers = {
+        Authorization: `Bearer ${session.user.accessToken}`,
+    };
 
     try {
-        const promises = artistIds.map((id) =>
-            axios.get(`https://api.spotify.com/v1/artists/${id}/top-tracks?market=US`, { headers })
-        );
+        const artistTracks: ArtistTracks[] = [];
 
-        const responses = await Promise.all(promises);
+        // Fetch top tracks per artist (must be individual requests)
+        for (const artistId of artistIds) {
+            const response = await axios.get(
+                `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
+                {
+                    headers,
+                    params: { market: "US" },
+                }
+            );
 
-        const artistTracks = responses.map((resp, index) => ({
-            artistId: artistIds[index],
-            tracks: resp.data.tracks, // Top tracks for each artist
-        }));
+            artistTracks.push({
+                artistId,
+                tracks: response.data.tracks.map((track: Track) => ({
+                    id: track.id,
+                    uri: track.uri,
+                    duration_ms: track.duration_ms,
+                    name: track.name,
+                    popularity: track.popularity,
+                })),
+            });
+        }
 
         return res.status(200).json({ artistTracks });
     } catch (error) {
-        console.error("Error fetching tracks:", error);
-        return res.status(500).json({ error: "Failed to fetch tracks" });
+        console.error("Error fetching artist tracks:", error);
+        return res.status(500).json({ error: "Failed to fetch artist tracks" });
     }
 }
