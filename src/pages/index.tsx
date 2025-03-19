@@ -1,6 +1,5 @@
 import { useSession } from "next-auth/react";
 import { useState, useEffect } from "react";
-import LoginButton from "@/components/LoginButton";
 import ArtistSearch from "@/components/ArtistSearch";
 import PlaylistGenerator from "@/components/PlaylistGenerator";
 import { Artist } from "@/types";
@@ -18,12 +17,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-background text-foreground">
-      <LoginButton />
-
-      <Header />
-
-      <main className="container mx-auto px-4">
+    <div className="min-h-screen flex flex-col text-foreground pb-20">
+      <main className="container m-auto px-4 mt-8 md:mt-auto">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-2/3">
             {session && (
@@ -43,17 +38,5 @@ export default function Home() {
         </div>
       </main>
     </div>
-
-    // <div className="flex flex-col items-center justify-center space-y-6 py-10">
-    //     <h1 className="text-3xl font-bold">Spotify Playlist Generator</h1>
-    //     <LoginButton />
-
-    //     {session && (
-    //         <>
-    //             <ArtistSearch />
-    //             <PlaylistGenerator selectedArtists={selectedArtists} />
-    //         </>
-    //     )}
-    // </div>
   );
 }
