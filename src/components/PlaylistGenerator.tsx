@@ -1,92 +1,117 @@
 "use client";
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { useSession } from "next-auth/react";
 import { Artist } from "@/types";
 import { Music, Clock, Hash } from "lucide-react";
 
 interface Track {
-  popularity: number;
-  id: string;
-  uri: string;
-  duration_ms: number;
-  name: string;
+    popularity: number;
+    id: string;
+    uri: string;
+    duration_ms: number;
+    name: string;
 }
 
 interface ArtistTracks {
-  artistId: string;
-  tracks: Track[];
+    artistId: string;
+    tracks: Track[];
 }
 
-export default function PlaylistGenerator({
-  selectedArtists,
-}: {
-  selectedArtists: Artist[];
-}) {
-  console.log(selectedArtists);
-  const [amount, setAmount] = useState<number>(25);
-  const [duration, setDuration] = useState<number>(0); // minutes
-  const [useDuration, setUseDuration] = useState<boolean>(false);
-  const [randomSongs, setRandomSongs] = useState<boolean>(false);
-  const [playlistName, setPlaylistName] = useState<string>("");
-  const [existingPlaylistId, setExistingPlaylistId] = useState<string>("");
-  const [clearExisting, setClearExisting] = useState<boolean>(false);
-  const [isMobile, setIsMobile] = useState<boolean>(false);
-  const [isFormPopupOpen, setIsFormPopupOpen] = useState<boolean>(false);
+interface Album {
+    id: string;
+}
 
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
+export default function PlaylistGenerator({ selectedArtists }: { selectedArtists: Artist[] }) {
+    const { data: session } = useSession();
+    const [amount, setAmount] = useState(25);
+    const [duration, setDuration] = useState(0);
+    const [useDuration, setUseDuration] = useState(false);
+    const [randomSongs, setRandomSongs] = useState(false);
+    const [playlistName, setPlaylistName] = useState("");
+    const [existingPlaylistId, setExistingPlaylistId] = useState("");
+    const [clearExisting, setClearExisting] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+    const [isFormPopupOpen, setIsFormPopupOpen] = useState(false);
+
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth <= 768);
+        };
+        checkMobile();
+        window.addEventListener("resize", checkMobile);
+        return () => window.removeEventListener("resize", checkMobile);
+    }, []);
+
+    const generatePlaylist = async () => {
+        if (!session || !session.user.accessToken) {
+            alert("You need to log in with Spotify first!");
+            return;
+        }
+        if (selectedArtists.length === 0) {
+            alert("Select at least one artist.");
+            return;
+        }
+
+        try {
+            const artistIds = selectedArtists.map(a => a.id);
+            let artistTracks: ArtistTracks[] = [];
+
+            if (randomSongs) {
+                const albumResponses = await Promise.all(
+                    artistIds.map(artistId =>
+                        axios.get<{ items: Album[] }>(`https://api.spotify.com/v1/artists/${artistId}/albums`, {
+                            params: { include_groups: "album,single", market: "US" },
+                            headers: { Authorization: `Bearer ${session.user.accessToken}` }
+                        })
+                    )
+                );
+
+                const allAlbumIds = albumResponses.flatMap(res => res.data.items.map(album => album.id));
+
+                const trackResponses = await Promise.all(
+                    allAlbumIds.map(albumId =>
+                        axios.get<{ items: Track[] }>(`https://api.spotify.com/v1/albums/${albumId}/tracks`, {
+                            headers: { Authorization: `Bearer ${session.user.accessToken}` }
+                        })
+                    )
+                );
+
+                artistTracks = artistIds.map(id => ({
+                    artistId: id,
+                    tracks: trackResponses.flatMap(res => res.data.items).map(track => ({
+                        id: track.id,
+                        uri: track.uri,
+                        duration_ms: track.duration_ms,
+                        name: track.name,
+                        popularity: Math.floor(Math.random() * 100)
+                    }))
+                }));
+            } else {
+                const { data } = await axios.post<{ artistTracks: ArtistTracks[] }>("/api/artists/top-tracks", { artistIds });
+                artistTracks = data.artistTracks;
+            }
+
+            const tracks = distributeTracks(
+                artistTracks,
+                useDuration ? undefined : amount,
+                useDuration ? duration * 60 * 1000 : undefined,
+                randomSongs
+            );
+
+            await axios.post("/api/playlists/manage", {
+                playlistId: existingPlaylistId || undefined,
+                title: playlistName,
+                trackUris: tracks.map((t: Track) => t.uri),
+                clearExisting
+            });
+
+            alert(`Playlist generated successfully with ${tracks.length} songs!`);
+            setIsFormPopupOpen(false);
+        } catch (error) {
+            alert("Failed to generate playlist.");
+        }
     };
-
-    // check screen size
-    checkMobile();
-
-    window.addEventListener("resize", checkMobile);
-
-    return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const generatePlaylist = async () => {
-    if (selectedArtists.length === 0) {
-      alert("Select at least one artist.");
-      return;
-    }
-
-    try {
-      const artistIds = selectedArtists.map((a) => a.id);
-
-      // Fetch tracks from backend
-      const { data } = await axios.post("/api/artists/top-tracks", {
-        artistIds,
-      });
-
-      // Determine parameters clearly
-      const totalDurationMs = useDuration ? duration * 60 * 1000 : undefined;
-      const totalTracks = useDuration ? undefined : amount;
-
-      // Select tracks based on filters
-      const tracks = distributeTracks(
-        data.artistTracks,
-        totalTracks,
-        totalDurationMs,
-        randomSongs
-      );
-
-      // Call API to manage playlist
-      await axios.post("/api/playlists/manage", {
-        playlistId: existingPlaylistId || undefined,
-        title: playlistName,
-        trackUris: tracks.map((t) => t.uri),
-        clearExisting,
-      });
-
-      alert("Playlist generated successfully!");
-      setIsFormPopupOpen(false);
-    } catch (error) {
-      console.error("Error generating playlist:", error);
-      alert("Failed to generate playlist.");
-    }
-  };
 
   const distributeTracks = (
     artistTracks: ArtistTracks[],
@@ -187,7 +212,7 @@ export default function PlaylistGenerator({
         </div>
 
         <div className="flex flex-col">
-          {useDuration ? (
+          {!useDuration ? (
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
                 <Music size={16} />

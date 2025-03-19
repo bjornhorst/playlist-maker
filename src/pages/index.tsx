@@ -23,7 +23,7 @@ export default function Home() {
           <div className="lg:w-2/3">
             {session && (
               <>
-                <ArtistSearch />
+                <ArtistSearch onArtistsUpdate={setSelectedArtists} />
               </>
             )}
           </div>
