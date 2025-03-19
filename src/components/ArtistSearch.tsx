@@ -106,7 +106,7 @@ export default function ArtistSearch() {
             />
 
             {isSearching && artists.length > 0 && (
-              <div className="absolute z-10 w-full mt-1 bg-secondary shadow-lg rounded-md border max-h-60 overflow-y-auto">
+              <div className="absolute z-10 w-full mt-1 bg-secondary shadow-lg rounded-md max-h-94 overflow-y-auto ">
                 {artists.map((artist) => (
                   <div
                     key={artist.id}

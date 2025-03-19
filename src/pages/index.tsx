@@ -17,14 +17,8 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-screen flex flex-col text-foreground pb-20 md:pb-0">
-      {session && (
-        <>
-          <Header />
-        </>
-      )}
-
-      <main className="container mx-auto px-4">
+    <div className="min-h-screen flex flex-col text-foreground pb-20">
+      <main className="container m-auto px-4 mt-8 md:mt-auto">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-2/3">
             {session && (

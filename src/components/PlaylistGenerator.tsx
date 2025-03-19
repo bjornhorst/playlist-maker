@@ -143,7 +143,7 @@ export default function PlaylistGenerator({
 
   // Render form
   const renderForm = () => (
-    <div className="flex flex-col space-y-4 p-4 rounded-md">
+    <div className="flex flex-col space-y-4 p-4 rounded-md bg-secondary">
       <h2 className="text-xl font-semibold">Generate Playlist</h2>
       <div>
         <label htmlFor="title" className="block text-sm font-medium mb-2">
@@ -161,7 +161,7 @@ export default function PlaylistGenerator({
             onChange={(e) => setPlaylistName(e.target.value)}
             required
             placeholder="My Awesome Playlist"
-            className="w-full bg-secondary border-0 rounded-md py-2.5 pl-10 pr-3 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none"
+            className="w-full bg-background border-0 rounded-md py-2.5 pl-10 pr-3 text-sm focus:ring-1 focus:ring-primary/30 focus:outline-none"
           />
         </div>
       </div>
@@ -182,7 +182,7 @@ export default function PlaylistGenerator({
               checked={useDuration}
               onChange={(e) => setUseDuration(e.target.checked)}
             />
-            <div className="second-elm w-9 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
+            <div className="second-elm w-9 h-4 bg-background peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
           </label>
         </div>
 
@@ -196,7 +196,7 @@ export default function PlaylistGenerator({
                 type="number"
                 value={amount}
                 onChange={(e) => setAmount(Number(e.target.value))}
-                className="w-full bg-secondary rounded-md py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                className="w-full bg-background rounded-md py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                 placeholder="Amount of songs in playlist"
               />
             </div>
@@ -209,7 +209,7 @@ export default function PlaylistGenerator({
                 type="number"
                 value={duration}
                 onChange={(e) => setDuration(Number(e.target.value))}
-                className="w-full bg-secondary rounded-md py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+                className="w-full bg-background rounded-md py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
                 placeholder="Duration in minutes"
               />
             </div>
@@ -228,7 +228,7 @@ export default function PlaylistGenerator({
             checked={randomSongs}
             onChange={(e) => setRandomSongs(e.target.checked)}
           />
-          <div className="second-elm w-9 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[6px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
+          <div className="second-elm w-9 h-4 bg-background peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[6px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
         </label>
       </div>
 
@@ -240,7 +240,7 @@ export default function PlaylistGenerator({
           type="text"
           value={existingPlaylistId}
           onChange={(e) => setExistingPlaylistId(e.target.value)}
-          className="w-full bg-secondary rounded-md py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
+          className="w-full bg-background rounded-md py-2.5 pl-10 pr-10 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary/30"
           placeholder="Paste Spotify playlist ID here"
         />
       </div>
@@ -257,7 +257,7 @@ export default function PlaylistGenerator({
               checked={clearExisting}
               onChange={(e) => setClearExisting(e.target.checked)}
             />
-            <div className="second-elm w-9 h-4 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
+            <div className="second-elm w-9 h-4 bg-background peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
           </label>
         </div>
       )}
@@ -293,7 +293,7 @@ export default function PlaylistGenerator({
             onClick={() => setIsFormPopupOpen(false)}
           >
             <div
-              className=" bg-secondary rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
+              className="bg-secondary rounded-lg max-w-md w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {renderForm()}

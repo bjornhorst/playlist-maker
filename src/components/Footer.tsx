@@ -6,7 +6,7 @@ export default function Footer() {
     <footer className="fixed bottom-0 left-0 w-full bg-secondary py-4">
       <div className="container mx-auto px-4 flex md:items-center justify-between flex-col md:flex-row">
         <div className="md:text-center flex-grow text-muted-foreground text-sm">
-          Create your own playlist • Not affiliated with Spotify
+          Blabla blablablabla • Not affiliated with Spotify
         </div>
 
         <div className="md:text-right text-xs text-muted-foreground mt-2 md:mt-0">
