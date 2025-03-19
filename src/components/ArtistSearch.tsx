@@ -56,6 +56,7 @@ export default function ArtistSearch({onArtistsUpdate,}: {
             setArtists(response.data.artists.items);
             setIsSearching(true);
         } catch (error) {
+            console.log(error)
             setIsSearching(false);
         }
     };

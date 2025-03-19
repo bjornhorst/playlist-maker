@@ -109,6 +109,7 @@ export default function PlaylistGenerator({ selectedArtists }: { selectedArtists
             alert(`Playlist generated successfully with ${tracks.length} songs!`);
             setIsFormPopupOpen(false);
         } catch (error) {
+            console.log(error)
             alert("Failed to generate playlist.");
         }
     };

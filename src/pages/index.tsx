@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import ArtistSearch from "@/components/ArtistSearch";
 import PlaylistGenerator from "@/components/PlaylistGenerator";
 import { Artist } from "@/types";
-import Header from "@/components/Header";
 
 export default function Home() {
   const { data: session } = useSession();
