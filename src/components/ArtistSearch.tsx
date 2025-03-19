@@ -73,7 +73,7 @@ export default function ArtistSearch({onArtistsUpdate,}: {
     };
 
     return (
-        <div className="container mx-auto px-4 pl-0 relative">
+        <div className="container mx-auto md:px-4 pl-0 relative">
             <div className="relative" ref={searchContainerRef}>
                 <div className="flex flex-col mb-4">
                     <h2 className="text-xl font-bold mb-1.5">Search Artists </h2>
@@ -125,7 +125,7 @@ export default function ArtistSearch({onArtistsUpdate,}: {
             </div>
 
             {/* 🔥 Selected Artists Section */}
-            <div className="flex flex-col p-4 pl-0 gap-4">
+            <div className="flex flex-col md:p-4 pl-0 gap-4">
                 <div className="flex flex-col">
                     <h2 className="text-xl font-bold mb-1.5">Selected Artists</h2>
                     <p className="text-sm text-muted-foreground">

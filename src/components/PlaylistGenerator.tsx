@@ -303,7 +303,7 @@ export default function PlaylistGenerator({ selectedArtists }: { selectedArtists
   if (isMobile) {
     return (
       <div className="">
-        <div className="fixed bottom-18 w-full left-0 right-0 flex justify-center z-50 ">
+        <div className="fixed bottom-18 w-full left-0 right-0 flex justify-center z-10 ">
           <button
             onClick={() => setIsFormPopupOpen(true)}
             className="bg-green-500 text-white px-6 py-3 rounded-t-lg w-full"
