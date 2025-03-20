@@ -1,4 +1,4 @@
-import NextAuth, {NextAuthOptions, Account, User} from "next-auth";
+import NextAuth, { NextAuthOptions, Account } from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 import axios from "axios";
 import { JWT } from "next-auth/jwt";
@@ -8,6 +8,7 @@ const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!;
 const SPOTIFY_REFRESH_TOKEN_URL = "https://accounts.spotify.com/api/token";
 
 interface ExtendedToken extends JWT {
+    id: string;
     accessToken: string;
     accessTokenExpires: number;
     refreshToken: string;
@@ -15,11 +16,13 @@ interface ExtendedToken extends JWT {
 }
 
 interface ExtendedAccount extends Account {
-    expires_in: number; // Manually define this
+    expires_in: number;
 }
 
 async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> {
     try {
+        console.log("🔄 Refreshing token for user:", token.id); // ✅ Debug log
+
         const response = await axios.post(
             SPOTIFY_REFRESH_TOKEN_URL,
             new URLSearchParams({
@@ -29,9 +32,7 @@ async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> 
                 client_secret: SPOTIFY_CLIENT_SECRET,
             }),
             {
-                headers: {
-                    "Content-Type": "application/x-www-form-urlencoded",
-                },
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
             }
         );
 
@@ -44,7 +45,7 @@ async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> 
             refreshToken: refreshedTokens.refresh_token || token.refreshToken,
         };
     } catch (error) {
-        console.error("Error refreshing access token:", error);
+        console.error("❌ Error refreshing access token:", error);
         return { ...token, error: "RefreshTokenError" };
     }
 }
@@ -54,17 +55,18 @@ export const authOptions: NextAuthOptions = {
         SpotifyProvider({
             clientId: SPOTIFY_CLIENT_ID,
             clientSecret: SPOTIFY_CLIENT_SECRET,
-            authorization: "https://accounts.spotify.com/authorize?scope=user-read-email,user-read-private,playlist-modify-public,playlist-modify-private,user-top-read",
+            authorization:
+                "https://accounts.spotify.com/authorize?scope=user-read-email,user-read-private,playlist-modify-public,playlist-modify-private,user-top-read",
         }),
     ],
     callbacks: {
-        async jwt({ token, account}: { token: JWT; account?: Account | null; user?: User }) {
-            const extendedToken = token as ExtendedToken; // ✅ Type assertion to ExtendedToken
+        async jwt({ token, account, user }) {
+            const extendedToken = token as ExtendedToken;
 
-            if (account) {
-                const spotifyAccount = account as ExtendedAccount; // ✅ Ensure correct type
-
+            if (account && user) {
+                const spotifyAccount = account as ExtendedAccount;
                 return {
+                    id: user.id, // ✅ Explicitly casting to string
                     accessToken: account.access_token,
                     accessTokenExpires: Date.now() + spotifyAccount.expires_in * 1000,
                     refreshToken: account.refresh_token!,
@@ -78,11 +80,13 @@ export const authOptions: NextAuthOptions = {
             return await refreshAccessToken(extendedToken);
         },
         async session({ session, token }) {
+            session.user.id = token.id; // ✅ User ID toevoegen aan de sessie
             session.user.accessToken = token.accessToken;
             session.user.error = token.error;
             return session;
         },
     },
+    debug: true, // ✅ Debugging ingeschakeld voor foutopsporing
 };
 
 export default NextAuth(authOptions);

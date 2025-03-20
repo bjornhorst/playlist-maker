@@ -3,20 +3,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import axios from "axios";
 
-declare module "next-auth" {
-  interface Session {
-    user: {
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-      accessToken?: string;
-      refreshToken?: string;
-      expiresAt?: number;
-      error?: unknown;
-    };
-  }
-}
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
