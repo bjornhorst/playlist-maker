@@ -21,8 +21,6 @@ interface ExtendedAccount extends Account {
 
 async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> {
     try {
-        console.log("🔄 Refreshing token for user:", token.id); // ✅ Debug log
-
         const response = await axios.post(
             SPOTIFY_REFRESH_TOKEN_URL,
             new URLSearchParams({
@@ -66,7 +64,7 @@ export const authOptions: NextAuthOptions = {
             if (account && user) {
                 const spotifyAccount = account as ExtendedAccount;
                 return {
-                    id: user.id, // ✅ Explicitly casting to string
+                    id: user.id,
                     accessToken: account.access_token,
                     accessTokenExpires: Date.now() + spotifyAccount.expires_in * 1000,
                     refreshToken: account.refresh_token!,
@@ -80,13 +78,12 @@ export const authOptions: NextAuthOptions = {
             return await refreshAccessToken(extendedToken);
         },
         async session({ session, token }) {
-            session.user.id = token.id; // ✅ User ID toevoegen aan de sessie
+            session.user.id = token.id;
             session.user.accessToken = token.accessToken;
             session.user.error = token.error;
             return session;
         },
     },
-    debug: true, // ✅ Debugging ingeschakeld voor foutopsporing
 };
 
 export default NextAuth(authOptions);
