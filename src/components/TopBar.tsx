@@ -9,6 +9,7 @@ interface SpotifyProfile {
   name?: string;
   image?: string | null;
   email?: string;
+  id?: string;
 }
 
 export default function TopBar() {
@@ -91,6 +92,8 @@ export default function TopBar() {
                 )}
                 <span className="text-sm font-medium">
                   {spotifyProfile.name || "User"}
+                </span>  <span className="text-sm font-medium">
+                  {spotifyProfile.id || "User"}
                 </span>
               </div>
               <button
