@@ -24,6 +24,7 @@ export default async function handler(
       name: response.data.display_name,
       image: response.data.images?.[0]?.url || null,
       email: response.data.email,
+      id: response.data.id,
     });
   } catch (error) {
     console.error("Error fetching Spotify profile:", error);

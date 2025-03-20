@@ -9,6 +9,7 @@ interface SpotifyProfile {
   name?: string;
   image?: string | null;
   email?: string;
+  id?: string;
 }
 
 export default function TopBar() {
@@ -16,6 +17,8 @@ export default function TopBar() {
   const [spotifyProfile, setSpotifyProfile] = useState<SpotifyProfile>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+
 
   useEffect(() => {
     async function fetchSpotifyProfile() {
