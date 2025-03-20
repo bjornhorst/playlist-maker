@@ -4,6 +4,7 @@ import { useSession, signIn, signOut } from "next-auth/react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import axios from "axios";
+import {getUserPlaylists} from "@/lib/spotify";
 
 interface SpotifyProfile {
   name?: string;
@@ -17,6 +18,8 @@ export default function TopBar() {
   const [spotifyProfile, setSpotifyProfile] = useState<SpotifyProfile>({});
   const [isLoading, setIsLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+
 
   useEffect(() => {
     async function fetchSpotifyProfile() {
@@ -92,8 +95,6 @@ export default function TopBar() {
                 )}
                 <span className="text-sm font-medium">
                   {spotifyProfile.name || "User"}
-                </span>  <span className="text-sm font-medium">
-                  {spotifyProfile.id || "User"}
                 </span>
               </div>
               <button
