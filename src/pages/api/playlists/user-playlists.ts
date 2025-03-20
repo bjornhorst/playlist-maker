@@ -20,8 +20,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
             return res.status(400).json({ error: "Invalid user ID" });
         }
 
-        const response = await axios.get<SpotifyApi.ListOfUsersPlaylistsResponse>(
-            `https://api.spotify.com/v1/users/${userId}/playlists`,
+        const response = await axios.get<SpotifyApi.ListOfCurrentUsersPlaylistsResponse>(
+            `https://api.spotify.com/v1/me/playlists`,
             {
                 headers: { Authorization: `Bearer ${session.user.accessToken}` },
             }
