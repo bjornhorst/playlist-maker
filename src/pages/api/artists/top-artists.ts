@@ -14,6 +14,16 @@ interface Artist {
   external_urls: { spotify: string };
 }
 
+interface SpotifyArtist {
+  id: string;
+  name: string;
+  genres: string[];
+  images: { url: string }[];
+  popularity: number;
+  followers: { total: number };
+  external_urls: { spotify: string };
+}
+
 interface ResponseData {
   topArtists?: Artist[];
   error?: string;
@@ -46,7 +56,7 @@ export default async function handler(
 
     console.log("Spotify API Response:", response.data);
 
-    const topArtists: Artist[] = response.data.items.map((artist: any) => ({
+    const topArtists: Artist[] = response.data.items.map((artist: SpotifyArtist) => ({
       id: artist.id,
       name: artist.name,
       genres: artist.genres,
