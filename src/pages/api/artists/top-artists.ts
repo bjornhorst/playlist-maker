@@ -54,8 +54,6 @@ export default async function handler(
       }
     );
 
-    console.log("Spotify API Response:", response.data);
-
     const topArtists: Artist[] = response.data.items.map((artist: SpotifyArtist) => ({
       id: artist.id,
       name: artist.name,
