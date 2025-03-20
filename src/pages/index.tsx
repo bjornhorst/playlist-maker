@@ -17,7 +17,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col text-foreground pb-20">
-      <main className="container mx-auto px-4 mt-12 md:mb-auto">
+      <main className="container mx-auto px-4 mt-8 md:mt-12 md:mb-auto">
         <div className="flex flex-col lg:flex-row gap-12">
           <div className="lg:w-2/3">
             {session && (

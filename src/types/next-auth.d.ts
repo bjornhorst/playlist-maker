@@ -5,6 +5,7 @@ import { Account } from "next-auth";
 declare module "next-auth" {
     interface Session extends DefaultSession {
         user: {
+            id: unknown;
             error?: string|unknown;
             name?: string | null;
             email?: string | null;
@@ -31,6 +32,7 @@ declare module "next-auth/jwt" {
     }
 }
 interface ExtendedToken extends JWT {
+    id: string; // ✅ Ensure ID exists in JWT
     accessToken: string;
     accessTokenExpires: number;
     refreshToken: string;
