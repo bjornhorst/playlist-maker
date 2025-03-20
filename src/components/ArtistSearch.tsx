@@ -4,6 +4,7 @@ import axios from "axios";
 import { Search } from "lucide-react";
 import { Artist } from "@/types";
 import { useSession } from "next-auth/react";
+import SelectedArtistsSlider from './SelectedArtistsSlider';
 import SuggestedArtistsSlider from './SuggestedArtistsSlider';
 
 export default function ArtistSearch({
@@ -208,83 +209,37 @@ export default function ArtistSearch({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 pl-0">
-          {selectedArtists.length === 0 ? (
-            <p className="text-gray-500 col-span-full">No artists selected</p>
-          ) : (
-            selectedArtists.map((artist) => (
-              <div
-                key={artist.id}
-                className="relative group overflow-hidden bg-primary/10 border-primary/30 rounded-lg border transition-all duration-300 hover:border-primary/50 border-border/50 bg-card/70 hover:bg-card/90 p-4"
-              >
-                <div className="flex flex-col items-center gap-4">
-                  <div className="relative">
-                    <img
-                      src={artist.images[0]?.url || "/default.jpg"}
-                      alt={artist.name}
-                      className="w-full h-full max-h-32 max-w-32 rounded-md object-cover transition-transform duration-700 hover:scale-105"
-                      loading="lazy"
-                    />
-                    <div className="absolute inset-0 rounded-md ring-1 ring-inset ring-black/10"></div>
-                  </div>
-
-                  <div className="text-center w-full">
-                    <h3 className="font-medium text-base leading-6 break-words">
-                      {artist.name}
-                    </h3>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {artist.genres.slice(0, 3).join(", ")}
-                    </p>
-                  </div>
-                </div>
-
-                {/* 🔥 Add button to trigger `handleDeselectArtist` */}
-                <button
-                  onClick={() => handleDeselectArtist(artist.id)}
-                  className="absolute top-2 right-2 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity duration-300 text-destructive hover:text-destructive/80"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                  >
-                    <path
-                      fillRule="evenodd"
-                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </button>
-              </div>
-            ))
-          )}
-        </div>
-
-        {suggestedArtists.length > 0 && 
-          suggestedArtists.some(
-            (suggestedArtist) =>
-              !selectedArtists.some(
-                (selectedArtist) => selectedArtist.id === suggestedArtist.id
-              )
-          ) && (
-          <div className="w-full mt-1 bg-background md:mt-8">
-            <div className="py-1">
-              <div className="flex flex-col">
-                <h2 className="text-xl font-bold mb-1.5">Suggested Artists</h2>
-                <p className="text-sm text-muted-foreground">
-                  Use your favorite artists to create a playlist
-                </p>
-              </div>
-              <SuggestedArtistsSlider 
-                suggestedArtists={suggestedArtists}
-                selectedArtists={selectedArtists}
-                onSelectArtist={handleSelectArtist}
-              />
-            </div>
-          </div>
+        {selectedArtists.length > 0 && (
+          <SelectedArtistsSlider 
+            selectedArtists={selectedArtists}
+            onDeselectArtist={handleDeselectArtist}
+          />
         )}
       </div>
+
+      {suggestedArtists.length > 0 && 
+        suggestedArtists.some(
+          (suggestedArtist) =>
+            !selectedArtists.some(
+              (selectedArtist) => selectedArtist.id === suggestedArtist.id
+            )
+        ) && (
+        <div className="w-full mt-1 bg-background md:mt-8">
+          <div className="py-1">
+            <div className="flex flex-col">
+              <h2 className="text-xl font-bold mb-1.5">Suggested Artists</h2>
+              <p className="text-sm text-muted-foreground">
+                Use your favorite artists to create a playlist
+              </p>
+            </div>
+            <SuggestedArtistsSlider 
+              suggestedArtists={suggestedArtists}
+              selectedArtists={selectedArtists}
+              onSelectArtist={handleSelectArtist}
+            />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
