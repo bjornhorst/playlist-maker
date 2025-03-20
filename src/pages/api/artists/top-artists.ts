@@ -50,7 +50,7 @@ export default async function handler(
       "https://api.spotify.com/v1/me/top/artists",
       {
         headers,
-        params: { limit: 10, time_range: "medium_term" },
+        params: { limit: 12, time_range: "long_term" },
       }
     );
 
