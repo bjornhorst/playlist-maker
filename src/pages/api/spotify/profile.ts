@@ -3,9 +3,21 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import axios from "axios";
 
+// Define the response shape
+type SpotifyUserProfile = {
+  name: string | undefined;
+  image: string | null;
+  email: string;
+  id: string;
+};
+
+type ErrorResponse = {
+  error: string;
+};
+
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse
+    req: NextApiRequest,
+    res: NextApiResponse<SpotifyUserProfile | ErrorResponse>
 ) {
   const session = await getServerSession(req, res, authOptions);
 
@@ -14,11 +26,14 @@ export default async function handler(
   }
 
   try {
-    const response = await axios.get("https://api.spotify.com/v1/me", {
-      headers: {
-        Authorization: `Bearer ${session.user.accessToken}`,
-      },
-    });
+    const response = await axios.get<SpotifyApi.CurrentUsersProfileResponse>(
+        "https://api.spotify.com/v1/me",
+        {
+          headers: {
+            Authorization: `Bearer ${session.user.accessToken}`,
+          },
+        }
+    );
 
     return res.status(200).json({
       name: response.data.display_name,
@@ -28,6 +43,8 @@ export default async function handler(
     });
   } catch (error) {
     console.error("Error fetching Spotify profile:", error);
-    return res.status(500).json({ error: "Failed to fetch Spotify profile" });
+    return res
+        .status(500)
+        .json({ error: "Failed to fetch Spotify profile" });
   }
 }

@@ -64,8 +64,9 @@ export const authOptions: NextAuthOptions = {
             if (account && user) {
                 const spotifyAccount = account as ExtendedAccount;
                 return {
-                    id: user.id,
-                    sub: user.id, // ✅ Forceer identificatie
+                    ...token,
+                    sub: user.id,             // ✅ Set the sub (user ID) – standard in NextAuth
+                    id: user.id,              // ✅ Needed for session.user.id
                     accessToken: account.access_token,
                     accessTokenExpires: Date.now() + spotifyAccount.expires_in * 1000,
                     refreshToken: account.refresh_token!,
@@ -79,11 +80,11 @@ export const authOptions: NextAuthOptions = {
             return await refreshAccessToken(extendedToken);
         },
         async session({ session, token }) {
-            session.user.id = token.id;
+            session.user.id = token.sub || token.id; // ✅ Support both
             session.user.accessToken = token.accessToken;
             session.user.error = token.error;
             return session;
-        },
+        }
     },
 };
 

@@ -30,15 +30,15 @@ interface ResponseData {
 }
 
 export default async function handler(
-  req: NextApiRequest,
-  res: NextApiResponse<ResponseData>
+    req: NextApiRequest,
+    res: NextApiResponse<ResponseData>
 ) {
-
-
   const session = await getServerSession(req, res, authOptions);
 
-  if (!session || !session.user.accessToken) {
-    return res.status(401).json({ error: "Unauthorized: No active session or Spotify access token" });
+  if (!session || !session.user?.accessToken) {
+    return res
+        .status(401)
+        .json({ error: "Unauthorized: No active session or access token" });
   }
 
   const headers = {
@@ -47,30 +47,35 @@ export default async function handler(
 
   try {
     const response = await axios.get(
-      "https://api.spotify.com/v1/me/top/artists",
-      {
-        headers,
-        params: { limit: 12, time_range: "long_term" },
-      }
+        "https://api.spotify.com/v1/me/top/artists",
+        {
+          headers,
+          params: { limit: 12, time_range: "long_term" },
+        }
     );
 
-    const topArtists: Artist[] = response.data.items.map((artist: SpotifyArtist) => ({
-      id: artist.id,
-      name: artist.name,
-      genres: artist.genres,
-      images: artist.images,
-      popularity: artist.popularity,
-      followers: artist.followers,
-      external_urls: artist.external_urls,
-    }));
+    const topArtists: Artist[] = response.data.items.map(
+        (artist: SpotifyArtist) => ({
+          id: artist.id,
+          name: artist.name,
+          genres: artist.genres,
+          images: artist.images,
+          popularity: artist.popularity,
+          followers: artist.followers,
+          external_urls: artist.external_urls,
+        })
+    );
 
     return res.status(200).json({ topArtists });
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      console.error("Error in top artists API :", error.response ? error.response.data : error.message);
+      console.error(
+          "❌ Axios Error - Top Artists:",
+          error.response ? error.response.data : error.message
+      );
       return res.status(500).json({ error: "Failed to fetch top artists" });
     } else {
-      console.error("Unexpected error in top artists API:", error);
+      console.error("❌ Unknown Error - Top Artists:", error);
       return res.status(500).json({ error: "Unexpected error occurred" });
     }
   }

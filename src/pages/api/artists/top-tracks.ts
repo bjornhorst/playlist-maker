@@ -1,8 +1,6 @@
-// src/pages/api/artists/top-tracks.ts
 import type { NextApiRequest, NextApiResponse } from "next";
-import { getServerSession } from "next-auth/next";
+import { getToken } from "next-auth/jwt";
 import axios from "axios";
-import { authOptions } from "../auth/[...nextauth]";
 
 interface Track {
     id: string;
@@ -30,22 +28,21 @@ export default async function handler(
     req: NextApiRequest,
     res: NextApiResponse<ResponseData>
 ) {
-    const session = await getServerSession(req, res, authOptions);
+    const token = await getToken({ req });
 
-    if (!session || !session.user.accessToken) {
+    if (!token || !token.accessToken) {
         return res.status(401).json({ error: "Unauthorized" });
     }
 
     const { artistIds } = req.body as RequestBody;
 
     const headers = {
-        Authorization: `Bearer ${session.user.accessToken}`,
+        Authorization: `Bearer ${token.accessToken}`,
     };
 
     try {
         const artistTracks: ArtistTracks[] = [];
 
-        // Fetch top tracks per artist (must be individual requests)
         for (const artistId of artistIds) {
             const response = await axios.get(
                 `https://api.spotify.com/v1/artists/${artistId}/top-tracks`,
@@ -69,7 +66,7 @@ export default async function handler(
 
         return res.status(200).json({ artistTracks });
     } catch (error) {
-        console.error("Error fetching artist tracks:", error);
+        console.log(error)
         return res.status(500).json({ error: "Failed to fetch artist tracks" });
     }
 }
