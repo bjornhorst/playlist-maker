@@ -7,6 +7,7 @@ interface PlaylistRequestBody {
     playlistId?: string;
     title?: string;
     trackUris: string[];
+    isPlaylistPublic: boolean;
     clearExisting: boolean;
 }
 
@@ -26,7 +27,7 @@ export default async function handler(
         return res.status(401).json({ error: "Unauthorized" });
     }
 
-    const { playlistId, title, trackUris, clearExisting } = req.body as PlaylistRequestBody;
+    const { playlistId, title, trackUris, isPlaylistPublic, clearExisting } = req.body as PlaylistRequestBody;
 
     const headers = { Authorization: `Bearer ${session.user.accessToken}` };
 
@@ -39,7 +40,7 @@ export default async function handler(
 
             const createRes = await axios.post(
                 `https://api.spotify.com/v1/users/${userId}/playlists`,
-                { name: title, public: false },
+                { name: title, public: isPlaylistPublic },
                 { headers }
             );
 

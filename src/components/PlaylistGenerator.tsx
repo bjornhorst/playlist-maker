@@ -7,6 +7,7 @@ import {Music, Clock, Hash} from "lucide-react";
 import {Track, ArtistTracks, Album, Playlist} from "@/types/playlist";
 import {Helper} from "@/utils/toastHelper";
 import DividerWithText from "@/components/DividerWithText";
+import pLimit from "p-limit";
 
 
 export default function PlaylistGenerator({selectedArtists}: { selectedArtists: Artist[] }) {
@@ -20,7 +21,10 @@ export default function PlaylistGenerator({selectedArtists}: { selectedArtists: 
     const [clearExisting, setClearExisting] = useState(false);
     const [isMobile, setIsMobile] = useState(false);
     const [isFormPopupOpen, setIsFormPopupOpen] = useState(false);
+    const [isPlaylistPublic, setPlaylistPublic] = useState(false);
     const [userPlaylists, setUserPlaylists] = useState([]);
+
+    const limit = pLimit(5);  // Set your concurrency limit here
 
     useEffect(() => {
         if (session) {
@@ -40,14 +44,17 @@ export default function PlaylistGenerator({selectedArtists}: { selectedArtists: 
             const response = await fetch(`/api/playlists/user-playlists?userId=${session?.user?.id}`);
             const data = await response.json();
 
-            if (response.ok) {
-                setUserPlaylists(data.items); // ✅ Set the playlist data
+            if (response.ok && session) {
+
+                const writablePlaylists = data.items.filter((playlist: Playlist) => {
+                    return playlist.collaborative || playlist.owner.id === session.user.id;
+                });
+                setUserPlaylists(writablePlaylists);
             }
         } catch (error) {
             console.error("Failed to fetch playlists:", error);
         }
     };
-
 
     const generatePlaylist = async () => {
         if (!session || !session.user.accessToken) {
@@ -64,17 +71,21 @@ export default function PlaylistGenerator({selectedArtists}: { selectedArtists: 
             let artistTracks: ArtistTracks[] = [];
 
             if (randomSongs) {
+                //todo move to a internal api call that handles the spotify call
                 const albumResponses = await Promise.all(
                     artistIds.map(artistId =>
-                        axios.get<{ items: Album[] }>(`https://api.spotify.com/v1/artists/${artistId}/albums`, {
-                            params: {include_groups: "album,single", market: "US"},
-                            headers: {Authorization: `Bearer ${session.user.accessToken}`}
-                        })
+                        limit(() => axios.get<{ items: Album[] }>(
+                            `https://api.spotify.com/v1/artists/${artistId}/albums`, {
+                                params: { include_groups: "album,single", market: "US" },
+                                headers: { Authorization: `Bearer ${session.user.accessToken}` }
+                            }
+                        ))
                     )
                 );
 
                 const allAlbumIds = albumResponses.flatMap(res => res.data.items.map(album => album.id));
 
+                //todo move to a internal api call that handles the spotify call
                 const trackResponses = await Promise.all(
                     allAlbumIds.map(albumId =>
                         axios.get<{ items: Track[] }>(`https://api.spotify.com/v1/albums/${albumId}/tracks`, {
@@ -109,6 +120,7 @@ export default function PlaylistGenerator({selectedArtists}: { selectedArtists: 
                 playlistId: existingPlaylistId || undefined,
                 title: playlistName,
                 trackUris: tracks.map((t: Track) => t.uri),
+                isPlaylistPublic,
                 clearExisting
             });
 
@@ -196,6 +208,23 @@ export default function PlaylistGenerator({selectedArtists}: { selectedArtists: 
                     />
                 </div>
             </div>
+
+            {playlistName && (
+                <div className="flex flex-row mb-6">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm">Set playlist public</span>
+                    </div>
+                    <label className="flex items-center space-x-2 ml-auto relative">
+                        <input
+                            className="sr-only peer"
+                            type="checkbox"
+                            checked={isPlaylistPublic}
+                            onChange={(e) => setPlaylistPublic(e.target.checked)}
+                        />
+                        <div className="second-elm w-9 h-4 bg-background peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:left-[3px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-al"></div>
+                    </label>
+                </div>            )}
+
             <DividerWithText text="Of"/>
             <div className="relative">
         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
@@ -232,11 +261,11 @@ export default function PlaylistGenerator({selectedArtists}: { selectedArtists: 
             <div className="flex flex-col justify-between py-2">
                 <div className="flex flex-row mb-3">
                     <div className="flex items-center gap-2">
-            <span className="text-sm">
-              {useDuration
-                  ? "Amount of songs in playlist"
-                  : "Playlist duration"}
-            </span>
+                    <span className="text-sm">
+                      {useDuration
+                          ? "Amount of songs in playlist"
+                          : "Playlist duration"}
+                    </span>
                     </div>
                     <label className="flex items-center space-x-2 ml-auto relative">
                         <input
