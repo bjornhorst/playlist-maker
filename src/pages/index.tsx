@@ -1,14 +1,29 @@
 import { useSession, signIn } from "next-auth/react";
 import { useState, useEffect } from "react";
+import { toast, ToastContainer } from "react-toastify";
 import ArtistSearch from "@/components/ArtistSearch";
 import PlaylistGenerator from "@/components/PlaylistGenerator";
 import { Artist } from "@/types";
 import { Music } from "lucide-react";
 import MusicVisualizer from "../components/MusicVisualizer";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Home() {
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const [selectedArtists, setSelectedArtists] = useState<Artist[]>([]);
+
+  const handleSignIn = () => {
+    toast.info("Signing in...", {
+      position: "bottom-right",
+      autoClose: 2000,
+      hideProgressBar: true,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      theme: "dark",
+    });
+    signIn("spotify");
+  };
 
   useEffect(() => {
     const savedArtists = localStorage.getItem("selectedArtists");
@@ -17,8 +32,23 @@ export default function Home() {
     }
   }, []);
 
+  useEffect(() => {
+    if (status === "authenticated") {
+      toast.success("Successfully logged in!", {
+        position: "bottom-right",
+        autoClose: 3000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        theme: "dark",
+      });
+    }
+  }, [status]);
+
   return (
     <div className="min-h-screen flex flex-col items-center justify-center h-full text-foreground pb-20">
+      <ToastContainer theme="dark" />
       {!session && (
         <div className="flex flex-col h-full justify-center items-center mt-8 max-w-lg p-4 ">
           <MusicVisualizer />
@@ -47,10 +77,10 @@ export default function Home() {
               creating personalized playlists.
             </p>
             <button
-              onClick={() => signIn("spotify")}
+              onClick={handleSignIn}
               className="bg-primary px-4 py-2.5 rounded-full font-base hover:bg-green-500  transition-colors cursor-pointer flex flex-row gap-2 text-black mt-5"
             >
-              <Music size={20} color="#000" /> Connect with shopify
+              <Music size={20} color="#000" /> Connect with Spotify
             </button>
           </div>
         </div>
