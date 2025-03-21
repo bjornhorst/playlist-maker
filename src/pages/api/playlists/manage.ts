@@ -40,7 +40,13 @@ export default async function handler(
 
             const createRes = await axios.post(
                 `https://api.spotify.com/v1/users/${userId}/playlists`,
-                { name: title, public: isPlaylistPublic },
+        {
+          name: title,
+          public: isPlaylistPublic,
+          description: isPlaylistPublic
+            ? "Public playlist created by Songifyhub"
+            : "Private playlist created by Songifyhub",
+        },
                 { headers }
             );
 
