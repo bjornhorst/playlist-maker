@@ -4,70 +4,83 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]";
 
 interface PlaylistRequestBody {
-    playlistId?: string;
-    title?: string;
-    trackUris: string[];
-    isPlaylistPublic: boolean;
-    clearExisting: boolean;
+  playlistId?: string;
+  title?: string;
+  trackUris: string[];
+  isPlaylistPublic: boolean;
+  clearExisting: boolean;
 }
 
 interface PlaylistResponse {
-    success?: boolean;
-    playlistId?: string;
-    error?: string;
+  success?: boolean;
+  playlistId?: string;
+  error?: string;
 }
 
 export default async function handler(
-    req: NextApiRequest,
-    res: NextApiResponse<PlaylistResponse>
+  req: NextApiRequest,
+  res: NextApiResponse<PlaylistResponse>
 ) {
-    const session = await getServerSession(req, res, authOptions);
+  const session = await getServerSession(req, res, authOptions);
 
-    if (!session || !session.user.accessToken) {
-        return res.status(401).json({ error: "Unauthorized" });
-    }
+  if (!session || !session.user.accessToken) {
+    return res.status(401).json({ error: "Unauthorized" });
+  }
 
-    const { playlistId, title, trackUris, isPlaylistPublic, clearExisting } = req.body as PlaylistRequestBody;
+  const { playlistId, title, trackUris, clearExisting } =
+    req.body as PlaylistRequestBody;
 
-    const headers = { Authorization: `Bearer ${session.user.accessToken}` };
+  const headers = { Authorization: `Bearer ${session.user.accessToken}` };
 
-    try {
-        let finalPlaylistId = playlistId;
+  try {
+    let finalPlaylistId = playlistId;
 
-        if (!playlistId) {
-            const userRes = await axios.get("https://api.spotify.com/v1/me", { headers });
-            const userId = userRes.data.id;
+    if (!playlistId) {
+      const userRes = await axios.get("https://api.spotify.com/v1/me", {
+        headers,
+      });
+      const userId = userRes.data.id;
 
-            const createRes = await axios.post(
-                `https://api.spotify.com/v1/users/${userId}/playlists`,
+      console.error("Playlist Creation Details:", {
+        title,
+        userId,
+      });
+
+      const createRes = await axios.post(
+        `https://api.spotify.com/v1/users/${userId}/playlists`,
         {
           name: title,
-          public: isPlaylistPublic,
-          description: isPlaylistPublic
-            ? "Public playlist created by Songifyhub"
-            : "Private playlist created by Songifyhub",
+          public: false,
+          description: "Playlist created by Songifyhub",
         },
-                { headers }
-            );
+        { headers }
+      );
 
-            finalPlaylistId = createRes.data.id;
-        } else if (clearExisting) {
-            await axios.put(
-                `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
-                { uris: [] },
-                { headers }
-            );
-        }
+      console.error("Spotify API Response:", {
+        playlistId: createRes.data.id,
+        playlistPublic: createRes.data.public,
+      });
 
-        await axios.post(
-            `https://api.spotify.com/v1/playlists/${finalPlaylistId}/tracks`,
-            { uris: trackUris },
-            { headers }
-        );
-
-        return res.status(200).json({ success: true, playlistId: finalPlaylistId });
-    } catch (error) {
-        console.error("Playlist operation failed:", error);
-        return res.status(500).json({ error: "Playlist creation or update failed" });
+      finalPlaylistId = createRes.data.id;
+    } else if (clearExisting) {
+      await axios.put(
+        `https://api.spotify.com/v1/playlists/${playlistId}/tracks`,
+        { uris: [] },
+        { headers }
+      );
     }
+
+    await axios.post(
+      `https://api.spotify.com/v1/playlists/${finalPlaylistId}/tracks`,
+      { uris: trackUris },
+      { headers }
+    );
+
+    return res.status(200).json({ success: true, playlistId: finalPlaylistId });
+  } catch (error) {
+    console.error("Playlist operation failed:", error);
+    return res
+      .status(500)
+      .json({ error: "Playlist creation or update failed" });
+  }
 }
