@@ -1,7 +1,7 @@
-import NextAuth, { NextAuthOptions, Account } from "next-auth";
+import NextAuth, {NextAuthOptions, Account} from "next-auth";
 import SpotifyProvider from "next-auth/providers/spotify";
 import axios from "axios";
-import { JWT } from "next-auth/jwt";
+import {JWT} from "next-auth/jwt";
 
 const SPOTIFY_CLIENT_ID = process.env.SPOTIFY_CLIENT_ID!;
 const SPOTIFY_CLIENT_SECRET = process.env.SPOTIFY_CLIENT_SECRET!;
@@ -30,7 +30,7 @@ async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> 
                 client_secret: SPOTIFY_CLIENT_SECRET,
             }),
             {
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                headers: {"Content-Type": "application/x-www-form-urlencoded"},
             }
         );
 
@@ -44,7 +44,7 @@ async function refreshAccessToken(token: ExtendedToken): Promise<ExtendedToken> 
         };
     } catch (error) {
         console.error("❌ Error refreshing access token:", error);
-        return { ...token, error: "RefreshTokenError" };
+        return {...token, error: "RefreshTokenError"};
     }
 }
 
@@ -58,33 +58,36 @@ export const authOptions: NextAuthOptions = {
         }),
     ],
     callbacks: {
-        async jwt({ token, account, user }) {
+        async jwt({token, account, user}) {
             const extendedToken = token as ExtendedToken;
 
+            // On initial sign in
             if (account && user) {
                 const spotifyAccount = account as ExtendedAccount;
                 return {
-                    ...token,
-                    sub: user.id,             // ✅ Set the sub (user ID) – standard in NextAuth
-                    id: user.id,              // ✅ Needed for session.user.id
+                    id: user.id,
+                    sub: user.id, // 🛡 ensure this token is scoped to this user
                     accessToken: account.access_token,
                     accessTokenExpires: Date.now() + spotifyAccount.expires_in * 1000,
                     refreshToken: account.refresh_token!,
                 };
             }
 
+            // Reuse existing token if not expired
             if (Date.now() < extendedToken.accessTokenExpires) {
                 return extendedToken;
             }
 
+            // Refresh token if expired
             return await refreshAccessToken(extendedToken);
         },
-        async session({ session, token }) {
-            session.user.id = token.sub || token.id; // ✅ Support both
+
+        async session({session, token}) {
+            session.user.id = token.sub; // 👈 use sub (which is forced above)
             session.user.accessToken = token.accessToken;
             session.user.error = token.error;
             return session;
-        }
+        },
     },
 };
 
