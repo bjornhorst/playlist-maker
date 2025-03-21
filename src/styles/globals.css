@@ -69,6 +69,9 @@ body {
 .text-background {
   color: var(--background);
 }
+.text-muted {
+  color: #797979e8;
+}
 .text-foreground {
   color: var(--foreground);
 }
@@ -180,4 +183,45 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #666;
+}
+
+.bg-dark {
+  background: #131316;
+}
+
+.bg-dark-contrast {
+  background: #1c1c1d;
+}
+
+.custom-border {
+  border: 1px solid rgb(75, 75, 75);
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.animate-pulse-light {
+  animation: pulse 3s infinite;
+}
+
+.visualizer-bar {
+  animation: wave var(--speed) infinite ease-in-out;
+  animation-delay: calc(var(--i) * 0.2s);
+  transition: height 1s ease;
+  opacity: 0.7;
+}
+
+@keyframes wave {
+  0%,
+  100% {
+    transform: scaleY(1);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scaleY(0.8);
+    opacity: 0.5;
+  }
 }

@@ -18,8 +18,6 @@ export default function TopBar() {
   const [isLoading, setIsLoading] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-
-
   useEffect(() => {
     async function fetchSpotifyProfile() {
       if (session) {
@@ -58,25 +56,28 @@ export default function TopBar() {
         {/* desktop */}
         <div className="hidden md:flex items-center gap-16">
           <nav className="flex items-center gap-10">
-            <Link
-              href="/"
-              className="flex items-center gap-2 text-foreground hover:text-primary"
-            >
-              <Home size={16} />
-              Home
-            </Link>
             {session && (
-              <Link
-                href="/playlists"
-                className="flex items-center gap-2 text-foreground hover:text-primary"
-              >
-                <ListMusic size={16} />
-                Playlists
-              </Link>
+              <>
+                <Link
+                  href="/"
+                  className="flex items-center gap-2 text-foreground hover:text-primary"
+                >
+                  <Home size={16} />
+                  Home
+                </Link>
+
+                <Link
+                  href="/playlists"
+                  className="flex items-center gap-2 text-foreground hover:text-primary"
+                >
+                  <ListMusic size={16} />
+                  Playlists
+                </Link>
+              </>
             )}
           </nav>
 
-          {session ? (
+          {session && (
             <div className="flex items-center gap-4">
               <div className="mr-8 flex flex-row gap-2 items-center">
                 {isLoading ? (
@@ -104,13 +105,6 @@ export default function TopBar() {
                 <span className="text-sm">Logout</span>
               </button>
             </div>
-          ) : (
-            <button
-              onClick={() => signIn("spotify")}
-              className="bg-green-700 px-4 py-2 rounded-md text-sm hover:bg-green-500  transition-colors cursor-pointer"
-            >
-              Login
-            </button>
           )}
         </div>
 
@@ -176,7 +170,7 @@ export default function TopBar() {
 
               {session ? (
                 <button
-                    onClick={() => signOut({ callbackUrl: "/" })}
+                  onClick={() => signOut({ callbackUrl: "/" })}
                   className="flex items-center space-x-2 text-destructive border border-red-500 px-4 py-2 rounded-lg text-red-500 hover:border-red-300 hover:text-red-300 transition-colors cursor-pointer"
                 >
                   <LogOut size={16} />
