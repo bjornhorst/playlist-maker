@@ -65,6 +65,7 @@ export const authOptions: NextAuthOptions = {
                 const spotifyAccount = account as ExtendedAccount;
                 return {
                     id: user.id,
+                    sub: user.id, // ✅ Forceer identificatie
                     accessToken: account.access_token,
                     accessTokenExpires: Date.now() + spotifyAccount.expires_in * 1000,
                     refreshToken: account.refresh_token!,

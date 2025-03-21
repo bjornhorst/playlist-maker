@@ -176,7 +176,7 @@ export default function TopBar() {
 
               {session ? (
                 <button
-                  onClick={() => signOut()}
+                    onClick={() => signOut({ callbackUrl: "/" })}
                   className="flex items-center space-x-2 text-destructive border border-red-500 px-4 py-2 rounded-lg text-red-500 hover:border-red-300 hover:text-red-300 transition-colors cursor-pointer"
                 >
                   <LogOut size={16} />
