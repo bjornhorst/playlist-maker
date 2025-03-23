@@ -16,6 +16,10 @@ export interface Album {
 }
 
 export interface Playlist{
+    collaborative: boolean;
+    owner: {
+        id: string;
+    },
     id?: string,
     name?: string,
 }
