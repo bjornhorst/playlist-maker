@@ -8,6 +8,7 @@ import { Track, ArtistTracks, Album, Playlist } from "@/types/playlist";
 import { Helper } from "@/utils/toastHelper";
 import DividerWithText from "@/components/DividerWithText";
 import pLimit from "p-limit";
+import {fetchPlaylists} from "@/lib/functions";
 
 export default function PlaylistGenerator({
   selectedArtists,
@@ -24,14 +25,24 @@ export default function PlaylistGenerator({
   const [clearExisting, setClearExisting] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [isFormPopupOpen, setIsFormPopupOpen] = useState(false);
-  const [userPlaylists, setUserPlaylists] = useState([]);
+  const [userPlaylists, setUserPlaylists] = useState<Playlist[]>([]);
 
   const limit = pLimit(5); // Set your concurrency limit here
 
   useEffect(() => {
-    if (session) {
-      fetchPlaylists();
-    }
+    const fetchUserPlaylists = async () => {
+        if (session?.user?.id) {
+            try {
+                const playlists = await fetchPlaylists(session.user.id);
+                setUserPlaylists(playlists);
+            } catch (error) {
+                console.log(error)
+                Helper.toast.ShowError("Failed to fetch playlists.");
+            }
+        }
+    };
+
+    fetchUserPlaylists();
 
     const checkMobile = () => {
       setIsMobile(window.innerWidth <= 768);
@@ -39,27 +50,7 @@ export default function PlaylistGenerator({
     checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
-  }, []);
-
-  const fetchPlaylists = async () => {
-    try {
-      const response = await fetch(
-        `/api/playlists/user-playlists?userId=${session?.user?.id}`
-      );
-      const data = await response.json();
-
-      if (response.ok && session) {
-        const writablePlaylists = data.items.filter((playlist: Playlist) => {
-          return (
-            playlist.collaborative || playlist.owner.id === session.user.id
-          );
-        });
-        setUserPlaylists(writablePlaylists);
-      }
-    } catch (error) {
-      console.error("Failed to fetch playlists:", error);
-    }
-  };
+  }, [session]);
 
   const generatePlaylist = async () => {
     if (!session || !session.user.accessToken) {
@@ -207,6 +198,7 @@ export default function PlaylistGenerator({
 
     return selectedTracks;
   };
+
   // Render form
   const renderForm = () => (
     <div className="flex flex-col space-y-4 p-4 rounded-md bg-secondary">

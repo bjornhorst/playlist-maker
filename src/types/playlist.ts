@@ -15,11 +15,19 @@ export interface Album {
     id: string;
 }
 
-export interface Playlist{
+export interface Playlist {
     collaborative: boolean;
     owner: {
         id: string;
-    },
-    id?: string,
-    name?: string,
+    };
+    id?: string;
+    name: string;
+    images: {
+        url: string;
+        width?: number | null;
+        height?: number | null;
+    }[];
+    tracks: {
+        total: number;
+    };
 }
